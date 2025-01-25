@@ -61,9 +61,14 @@ public class mainViewController {
             }
             port = url.substring(portStart, portEndIndex == -1 ? url.length() : portEndIndex);
         }
-        if ((protocol.equals("http")) && port.isBlank()) {
-            port = "443";
-        } else if ((!protocol.equals("http") && port.isBlank())){
+        if ((protocol.equals("http") | protocol.equals("https")) && port.isBlank()) {
+            if (protocol.equals("http")) {
+                port = "80";
+            }  else {
+                port = "443";
+            }
+
+        } else if (((!protocol.equals("http") && (!protocol.equals("https")))   && port.isBlank())){
             System.out.println("Invalid url");
             return;
         }
