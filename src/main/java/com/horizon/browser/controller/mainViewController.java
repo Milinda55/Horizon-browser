@@ -74,15 +74,18 @@ public class mainViewController {
         }
 
 
-
-        // path
-        int pathStartIndex = url.indexOf('/', hostEndIndex + 1);
+        //path
+        int pathStartIndex = url.indexOf('/', url.indexOf("://") + 3);
         int pathEndIndex = url.indexOf('?', pathStartIndex);
         if (pathEndIndex == -1) {
             pathEndIndex = url.indexOf('#', pathStartIndex);
         }
+        if (pathEndIndex == -1) {
+            pathEndIndex = url.length();
+        }
+
         String path = (pathStartIndex != -1 && pathStartIndex < url.length())
-                ? url.substring(pathStartIndex, pathEndIndex == -1 ? url.length() : pathEndIndex)
+                ? url.substring(pathStartIndex, pathEndIndex)
                 : "/";
 
 
