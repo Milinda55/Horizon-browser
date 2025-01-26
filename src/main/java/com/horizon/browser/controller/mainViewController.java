@@ -6,7 +6,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.web.WebView;
 
-import java.io.IOException;
+import java.io.*;
+import java.net.Socket;
 
 public class mainViewController {
     public AnchorPane root;
@@ -94,8 +95,39 @@ public class mainViewController {
         System.out.println("port: " + port);
         System.out.println("path: " + path);
         System.out.println("==============");
-    }
 
+        Socket socket = new Socket(host, Integer.parseInt(port));
+        System.out.println("Connected to " + socket.getRemoteSocketAddress());
+        new Thread(() -> {
+            try {
+                InputStream is = socket.getInputStream();
+                InputStreamReader isr = new InputStreamReader(is);
+                BufferedReader br = new BufferedReader(isr);
+
+                String statusLine = br.readLine();
+                System.out.println(statusLine);
+                String[] s = statusLine.split(" ");
+                int statusCode = Integer.parseInt(s[1]);
+                System.out.println("status code: " + statusCode);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
+
+        String httpProtocol = """
+                    GET %s HTTP/1.1
+                    Host: %s
+                    User-Agent: Horizon-browser
+                    Connection: close
+                    Accept: text/html;
+                    
+                    """.formatted(path, host);
+
+        OutputStream os = socket.getOutputStream();
+        os.write(httpProtocol.getBytes());
+        os.flush();
+
+    }
 
 
 }
