@@ -109,6 +109,30 @@ public class mainViewController {
                 String[] s = statusLine.split(" ");
                 int statusCode = Integer.parseInt(s[1]);
                 System.out.println("status code: " + statusCode);
+
+                String line;
+                String header;
+                String value = null;
+                String contentType = "";
+
+                while ((line = br.readLine()) != null && !line.isBlank()) {
+//                    System.out.println(line);
+                    String[] split = line.split(":");
+                    header = split[0].strip();
+                    value = line.substring(header.length() + 1).strip();
+                    System.out.println("header: " + header);
+                    System.out.println("value: " + value);
+
+                    if (header.equalsIgnoreCase("Content-Type")) {
+                        contentType = value.strip();
+                        System.out.println("contentType: " + contentType);
+
+                    }
+                }
+
+
+
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
