@@ -8,6 +8,7 @@ import javafx.scene.web.WebView;
 
 import java.io.*;
 import java.net.Socket;
+import java.net.URL;
 
 public class mainViewController {
     public AnchorPane root;
@@ -89,12 +90,18 @@ public class mainViewController {
                 ? url.substring(pathStartIndex, pathEndIndex)
                 : "/";
 
+        URL url1 = new URL(url);
+        System.out.println("hostNew: " + url1.getHost());
+        System.out.println("portNew: " + url1.getPort());
 
         System.out.println("protocol: " + protocol);
         System.out.println("host: " + host);
         System.out.println("port: " + port);
         System.out.println("path: " + path);
         System.out.println("==============");
+
+//        wbView.getEngine().load(url);
+
 
         Socket socket = new Socket(host, Integer.parseInt(port));
         System.out.println("Connected to " + socket.getRemoteSocketAddress());
@@ -111,34 +118,43 @@ public class mainViewController {
 //                System.out.println("status code: " + statusCode);
 
                 String line;
-                String header;
-                String value = null;
+//                String header;
+//                String value = null;
                 String contentType = "";
 
-                while ((line = br.readLine()) != null && !line.isBlank()) {
-//                    System.out.println(line);
-                    String[] split = line.split(":");
-                    header = split[0].strip();
-                    value = line.substring(header.length() + 1).strip();
-//                    System.out.println("header: " + header);
-//                    System.out.println("value: " + value);
+                boolean redirection = statusCode >= 300 && statusCode <= 399;
 
-                    if (statusCode >= 300 && statusCode <= 400) {
-                        if (header.contains("Location")) {
-                            value = value.strip();
-                            loadWebPage(value);
-                            break;
-                        }
-                    }
-
-                    if (header.equalsIgnoreCase("Content-Type")) {
-                        contentType = value.strip();
-//                        System.out.println("contentType: " + contentType);
-
+                while ((line = br.readLine ()) != null && !line.isBlank ()) {
+                    String header = line.split(":")[0].strip ();
+                    String value = line.substring (  line.indexOf ( ":" )+ 1 ).strip ();
+                    if (redirection) {
+                        if(!header.equalsIgnoreCase ( "Location" )) continue;
+                        Platform.runLater ( () -> txtAddress.setText (value));
+                        loadWebPage ( value );
+                        return;
+                    }else {
+                        if(!header.equalsIgnoreCase ( "Content-Type" )) continue;
+                        contentType = value;
                     }
                 }
 
-
+                if (contentType.toLowerCase().contains("text/html".toLowerCase())) {
+                    String htmlBody = "";
+                    if ((line = br.readLine()) != null && line.contains("<")) {
+                        htmlBody = line;
+                    }
+                    while ((line = br.readLine()) != null) {
+                        htmlBody += line;
+                    }
+//                    String finalBody = htmlBody;
+//                    System.out.println(finalBody);
+                    String finalHtmlBody = htmlBody;
+                    Platform.runLater(() -> {
+                        wbView.getEngine().loadContent(finalHtmlBody, "text/html");
+                    });
+                } else {
+                    System.out.println("We accept only text/html");
+                }
 
 
             } catch (Exception e) {
@@ -152,12 +168,14 @@ public class mainViewController {
                     User-Agent: Horizon-browser
                     Connection: close
                     Accept: text/html;
-                    
+
                     """.formatted(path, host);
 
         OutputStream os = socket.getOutputStream();
         os.write(httpProtocol.getBytes());
         os.flush();
+
+
 
     }
 
