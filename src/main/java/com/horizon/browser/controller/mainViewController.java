@@ -108,7 +108,7 @@ public class mainViewController {
                 System.out.println(statusLine);
                 String[] s = statusLine.split(" ");
                 int statusCode = Integer.parseInt(s[1]);
-                System.out.println("status code: " + statusCode);
+//                System.out.println("status code: " + statusCode);
 
                 String line;
                 String header;
@@ -120,12 +120,20 @@ public class mainViewController {
                     String[] split = line.split(":");
                     header = split[0].strip();
                     value = line.substring(header.length() + 1).strip();
-                    System.out.println("header: " + header);
-                    System.out.println("value: " + value);
+//                    System.out.println("header: " + header);
+//                    System.out.println("value: " + value);
+
+                    if (statusCode >= 300 && statusCode <= 400) {
+                        if (header.contains("Location")) {
+                            value = value.strip();
+                            loadWebPage(value);
+                            break;
+                        }
+                    }
 
                     if (header.equalsIgnoreCase("Content-Type")) {
                         contentType = value.strip();
-                        System.out.println("contentType: " + contentType);
+//                        System.out.println("contentType: " + contentType);
 
                     }
                 }
